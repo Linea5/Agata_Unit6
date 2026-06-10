@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Angličtina – Unit 6 (Friends Forever)</title>
+<style>
+  :root{
+    --bg:#0f172a; --card:#1e293b; --card2:#172033;
+    --text:#e2e8f0; --muted:#94a3b8; --line:#334155;
+    --inp:#0b1220; --inpline:#334155; --focus:#38bdf8;
+    --ok:#22c55e; --okbg:#0f3520; --bad:#ef4444; --badbg:#3a1418;
+    --accent:#38bdf8;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; padding:18px 14px 90px;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg); color:var(--text); line-height:1.55;
+    -webkit-text-size-adjust:100%;
+  }
+  .wrap{max-width:760px; margin:0 auto;}
+  header h1{font-size:1.45rem; margin:0 0 4px;}
+  header p{margin:0 0 6px; color:var(--muted); font-size:.95rem;}
+  .hint-top{font-size:.88rem; color:var(--muted); background:var(--card2);
+    border:1px solid var(--line); border-radius:10px; padding:10px 12px; margin:14px 0 4px;}
+
+  .section{margin-top:26px;}
+  .section h2{font-size:1.08rem; margin:0 0 4px; color:var(--accent);
+    border-bottom:1px solid var(--line); padding-bottom:6px;}
+  .sub{font-size:.85rem; color:var(--muted); margin:2px 0 12px;}
+
+  .bank{display:flex; flex-wrap:wrap; gap:7px; margin:10px 0 14px;}
+  .bank span{background:var(--card); border:1px solid var(--line);
+    border-radius:999px; padding:4px 11px; font-size:.9rem; color:var(--text);}
+
+  .q{background:var(--card); border:1px solid var(--line); border-radius:12px;
+    padding:12px 14px; margin:10px 0;}
+  .q.hidden{display:none;}
+  .q .num{color:var(--muted); font-size:.82rem; margin-bottom:3px;}
+  .q .txt{font-size:1.02rem;}
+  .hintword{color:var(--muted); font-style:italic; font-size:.9rem;}
+
+  input.blank{
+    background:var(--inp); border:none; border-bottom:2px solid var(--inpline);
+    color:var(--text); font-size:1rem; padding:4px 6px; margin:0 3px;
+    min-width:70px; border-radius:6px 6px 0 0;
+    font-family:inherit;
+  }
+  input.blank:focus{outline:none; border-bottom-color:var(--focus);}
+  input.blank.correct{border-bottom-color:var(--ok); background:var(--okbg);}
+  input.blank.wrong{border-bottom-color:var(--bad); background:var(--badbg);}
+
+  .sol{display:block; margin-top:7px; font-size:.9rem; color:var(--ok);}
+  .sol.is-wrong{color:#fca5a5;}
+
+  .controls{position:sticky; bottom:0; left:0; right:0; margin-top:24px;
+    display:flex; flex-wrap:wrap; gap:10px; padding:12px 0;
+    background:linear-gradient(180deg, rgba(15,23,42,0) 0%, var(--bg) 35%);}
+  button{
+    font-family:inherit; font-size:.98rem; font-weight:600;
+    border:none; border-radius:10px; padding:12px 18px; cursor:pointer;
+    color:#06121f;
+  }
+  button.primary{background:var(--accent);}
+  button.ghost{background:transparent; color:var(--text); border:1px solid var(--line);}
+  button:active{transform:translateY(1px);}
+
+  .result{background:var(--card2); border:1px solid var(--line); border-radius:12px;
+    padding:16px; margin:18px 0; display:none;}
+  .result.show{display:block;}
+  .score{font-size:1.5rem; font-weight:700; margin:0 0 10px;}
+  .breakdown{margin:0; padding:0; list-style:none;}
+  .breakdown li{display:flex; justify-content:space-between; padding:5px 0;
+    border-top:1px solid var(--line); font-size:.92rem; gap:10px;}
+  .breakdown li:first-child{border-top:none;}
+  .pill{font-weight:700; white-space:nowrap;}
+  .pill.full{color:var(--ok);}
+  .pill.part{color:#fbbf24;}
+  .msg{margin-top:12px; font-size:.95rem; color:var(--muted);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Angličtina – Unit 6 <span style="color:var(--muted);font-size:1rem;">(Friends Forever)</span></h1>
+    <p>Opakovanie pred testom</p>
+  </header>
+
+  <div class="hint-top">
+    Test má 7 častí: nepravidelné slovesá, Past Simple (vety, zápor, otázky), časové výrazy,
+    prídavné mená a double genitive. Je dlhší (47 viet) – pokojne ho rob po častiach.
+    Krátky zápor píš <b>didn't</b>. Veľké a malé písmená nevadia.
+    Keď máš hotovo, klikni <b>Skontroluj odpovede</b> dole.
+  </div>
+
+  <div id="result" class="result">
+    <p class="score" id="score"></p>
+    <ul class="breakdown" id="breakdown"></ul>
+    <p class="msg" id="msg"></p>
+  </div>
+
+  <div id="quiz"></div>
+
+  <div class="controls">
+    <button class="primary" id="checkBtn">Skontroluj odpovede</button>
+    <button class="ghost" id="retryBtn" style="display:none;">Precvič len chyby</button>
+    <button class="ghost" id="showAllBtn" style="display:none;">Zobraz všetko</button>
+    <button class="ghost" id="resetBtn">Začni odznova</button>
+  </div>
+</div>
+
+<script>
+// --- Slovná zásoba (word bank) pre prídavné mená ---
+var BANK = ["boring","cheerful","confident","easy-going","friendly","funny",
+  "generous","helpful","honest","horrible","intelligent","jealous",
+  "kind","lazy","patient","sensible"];
+
+// --- Názvy tém ---
+var VA = "1. Nepravidelné slovesá – napíš minulý čas";
+var VB = "2. Past Simple – doplň sloveso (kladné vety)";
+var VC = "3. Past Simple – záporné vety";
+var VD = "4. Past Simple – utvor otázku";
+var TE = "5. Časové výrazy: last / yesterday / ago";
+var AD = "6. Osobnostné prídavné mená";
+var DG = "7. Double genitive (a friend of …)";
+
+// --- Otázky. {0},{1}... = vstupné polia. a = pole akceptovaných tvarov pre každé pole. ---
+var QUESTIONS = [
+  // 1) Nepravidelné slovesá: base -> past
+  {t:VA, txt:"<b>know</b> &rarr; {0}", a:[["knew"]]},
+  {t:VA, txt:"<b>buy</b> &rarr; {0}", a:[["bought"]]},
+  {t:VA, txt:"<b>bring</b> &rarr; {0}", a:[["brought"]]},
+  {t:VA, txt:"<b>take</b> &rarr; {0}", a:[["took"]]},
+  {t:VA, txt:"<b>eat</b> &rarr; {0}", a:[["ate"]]},
+  {t:VA, txt:"<b>leave</b> &rarr; {0}", a:[["left"]]},
+  {t:VA, txt:"<b>drink</b> &rarr; {0}", a:[["drank"]]},
+  {t:VA, txt:"<b>have</b> &rarr; {0}", a:[["had"]]},
+  {t:VA, txt:"<b>say</b> &rarr; {0}", a:[["said"]]},
+  {t:VA, txt:"<b>tell</b> &rarr; {0}", a:[["told"]]},
+  {t:VA, txt:"<b>get</b> &rarr; {0}", a:[["got"]]},
+  {t:VA, txt:"<b>cost</b> &rarr; {0}", a:[["cost"]]},
+
+  // 2) Past Simple - kladné vety (mix pravidelné/nepravidelné)
+  {t:VB, txt:"Yesterday we {0} a really good film. <span class='hintword'>(see)</span>", a:[["saw"]]},
+  {t:VB, txt:"My dad {0} me some money for my birthday. <span class='hintword'>(give)</span>", a:[["gave"]]},
+  {t:VB, txt:"We {0} four tickets near the stage. <span class='hintword'>(buy)</span>", a:[["bought"]]},
+  {t:VB, txt:"The band {0} for three hours. <span class='hintword'>(perform)</span>", a:[["performed"]]},
+  {t:VB, txt:"My friends {0} to my house before the concert. <span class='hintword'>(come)</span>", a:[["came"]]},
+
+  // 3) Past Simple - zápor
+  {t:VC, txt:"At first they {0} {1} me. <span class='hintword'>(not / believe)</span>", a:[["didnt","did not"],["believe"]]},
+  {t:VC, txt:"I {0} {1} enough money for the tickets. <span class='hintword'>(not / have)</span>", a:[["didnt","did not"],["have"]]},
+  {t:VC, txt:"They {0} {1} my favourite song. <span class='hintword'>(not / sing)</span>", a:[["didnt","did not"],["sing"]]},
+
+  // 4) Past Simple - utvor otázku (did + podmet + základný tvar)
+  {t:VD, txt:"I bought something last week.<br>What {0} {1} {2}? <span class='hintword'>(buy)</span>", a:[["did"],["you"],["buy"]]},
+  {t:VD, txt:"They went somewhere last weekend.<br>Where {0} {1} {2}? <span class='hintword'>(go)</span>", a:[["did"],["they"],["go"]]},
+  {t:VD, txt:"I heard something strange.<br>What {0} {1} {2}? <span class='hintword'>(hear)</span>", a:[["did"],["you"],["hear"]]},
+  {t:VD, txt:"You said something.<br>What {0} {1} {2}? <span class='hintword'>(say)</span>", a:[["did"],["I"],["say"]]},
+  {t:VD, txt:"I met someone in town this morning.<br>Who {0} {1} {2}? <span class='hintword'>(meet)</span>", a:[["did"],["you"],["meet"]]},
+  {t:VD, txt:"I phoned her last night.<br>Who {0} {1} {2}? <span class='hintword'>(phone)</span>", a:[["did"],["you"],["phone"]]},
+
+  // 5) Časové výrazy
+  {t:TE, txt:"I saw her two weeks {0}.", a:[["ago"]]},
+  {t:TE, txt:"Where were you {0} afternoon?", a:[["yesterday"]]},
+  {t:TE, txt:"Tom arrived {0} week.", a:[["last"]]},
+  {t:TE, txt:"We started at this school five years {0}.", a:[["ago"]]},
+  {t:TE, txt:"Chloe didn't feel well {0} morning.", a:[["yesterday"]]},
+  {t:TE, txt:"We went out {0} night.", a:[["last"]]},
+
+  // 6) Prídavné mená (definícia -> slovo). Banka hore.
+  {t:AD, txt:"making you smile or laugh &rarr; {0}", a:[["funny"]]},
+  {t:AD, txt:"happy to help others &rarr; {0}", a:[["helpful"]]},
+  {t:AD, txt:"able to learn and understand things easily &rarr; {0}", a:[["intelligent"]]},
+  {t:AD, txt:"happy and positive &rarr; {0}", a:[["cheerful"]]},
+  {t:AD, txt:"relaxed and not easily worried &rarr; {0}", a:[["easy-going","easygoing","easy going"]]},
+  {t:AD, txt:"happy to give other people money and presents &rarr; {0}", a:[["generous"]]},
+  {t:AD, txt:"certain about your ability to do things well &rarr; {0}", a:[["confident"]]},
+  {t:AD, txt:"unhappy because you want something someone else has &rarr; {0}", a:[["jealous"]]},
+  {t:AD, txt:"not interesting or exciting &rarr; {0}", a:[["boring"]]},
+
+  // 7) Double genitive
+  {t:DG, txt:"Last week, I met a friend of {0}. <span class='hintword'>(you)</span>", a:[["yours"]]},
+  {t:DG, txt:"He gave me a jacket of {0}. <span class='hintword'>(he)</span>", a:[["his"]]},
+  {t:DG, txt:"Spencer and Sue are very good friends of {0}. <span class='hintword'>(we)</span>", a:[["ours"]]},
+  {t:DG, txt:"I don't know her, but she's a cousin of {0}. <span class='hintword'>(John)</span>", a:[["John's"]]},
+  {t:DG, txt:"I love their music. I've got eight CDs of {0}. <span class='hintword'>(they)</span>", a:[["theirs"]]},
+  {t:DG, txt:"Our teacher is an old friend of {0}. <span class='hintword'>(my father)</span>", a:[["my father's"]]}
+];
+
+// --- Normalizácia: malé písmená, bez apostrofov, jednoduché medzery ---
+function norm(s){
+  return s.toLowerCase().trim()
+    .replace(/[''ʼ`’]/g, "")
+    .replace(/\s+/g, " ");
+}
+function accepts(list, val){
+  var n = norm(val);
+  for(var i=0;i<list.length;i++){ if(norm(list[i])===n) return true; }
+  return false;
+}
+
+var quiz = document.getElementById("quiz");
+var lastTopic = null;
+
+function renderBank(){
+  var d = document.createElement("div");
+  d.className = "sub";
+  d.textContent = "Slovíčka (vyber správne):";
+  var b = document.createElement("div");
+  b.className = "bank";
+  BANK.forEach(function(w){
+    var s = document.createElement("span"); s.textContent = w; b.appendChild(s);
+  });
+  return [d,b];
+}
+
+QUESTIONS.forEach(function(q, qi){
+  if(q.t !== lastTopic){
+    lastTopic = q.t;
+    var sec = document.createElement("div");
+    sec.className = "section";
+    var h = document.createElement("h2"); h.textContent = q.t;
+    sec.appendChild(h);
+    if(q.t === AD){
+      renderBank().forEach(function(el){ sec.appendChild(el); });
+    }
+    quiz.appendChild(sec);
+  }
+
+  var row = document.createElement("div");
+  row.className = "q";
+  row.id = "q" + qi;
+
+  var num = document.createElement("div");
+  num.className = "num";
+  num.textContent = "Veta " + (qi+1);
+  row.appendChild(num);
+
+  var txt = document.createElement("div");
+  txt.className = "txt";
+  var parts = q.txt.split(/(\{\d+\})/);
+  parts.forEach(function(p){
+    var m = p.match(/^\{(\d+)\}$/);
+    if(m){
+      var bi = parseInt(m[1],10);
+      var inp = document.createElement("input");
+      inp.type = "text";
+      inp.className = "blank";
+      inp.id = "q"+qi+"b"+bi;
+      inp.setAttribute("autocapitalize","off");
+      inp.setAttribute("autocomplete","off");
+      inp.setAttribute("autocorrect","off");
+      inp.setAttribute("spellcheck","false");
+      var longest = 0;
+      q.a[bi].forEach(function(x){ if(x.length>longest) longest=x.length; });
+      inp.style.width = Math.max(70, longest*11 + 24) + "px";
+      txt.appendChild(inp);
+    } else {
+      var span = document.createElement("span");
+      span.innerHTML = p;
+      txt.appendChild(span);
+    }
+  });
+  row.appendChild(txt);
+
+  var sol = document.createElement("span");
+  sol.className = "sol";
+  sol.style.display = "none";
+  sol.id = "sol"+qi;
+  row.appendChild(sol);
+
+  quiz.appendChild(row);
+});
+
+var checkBtn = document.getElementById("checkBtn");
+var retryBtn = document.getElementById("retryBtn");
+var showAllBtn = document.getElementById("showAllBtn");
+var resetBtn = document.getElementById("resetBtn");
+var resultBox = document.getElementById("result");
+
+function checkAll(){
+  var totalCorrect = 0;
+  var perTopic = {};
+  var order = [];
+
+  QUESTIONS.forEach(function(q, qi){
+    if(!perTopic[q.t]){ perTopic[q.t] = {ok:0, total:0}; order.push(q.t); }
+    perTopic[q.t].total++;
+
+    var allBlanksOk = true;
+    var solStrings = [];
+    q.a.forEach(function(list, bi){
+      var inp = document.getElementById("q"+qi+"b"+bi);
+      var ok = accepts(list, inp.value);
+      inp.classList.remove("correct","wrong");
+      inp.classList.add(ok ? "correct" : "wrong");
+      if(!ok) allBlanksOk = false;
+      solStrings.push(list[0]);
+    });
+
+    var sol = document.getElementById("sol"+qi);
+    var row = document.getElementById("q"+qi);
+    if(allBlanksOk){
+      totalCorrect++;
+      perTopic[q.t].ok++;
+      sol.style.display = "none";
+      row.removeAttribute("data-wrong");
+    }else{
+      sol.style.display = "block";
+      sol.classList.add("is-wrong");
+      sol.textContent = "Správne: " + solStrings.join("  +  ");
+      row.setAttribute("data-wrong","1");
+    }
+  });
+
+  document.getElementById("score").textContent =
+    "Máš " + totalCorrect + " z " + QUESTIONS.length + " správne.";
+
+  var ul = document.getElementById("breakdown");
+  ul.innerHTML = "";
+  order.forEach(function(t){
+    var li = document.createElement("li");
+    var name = document.createElement("span"); name.textContent = t;
+    var pill = document.createElement("span");
+    pill.className = "pill " + (perTopic[t].ok===perTopic[t].total ? "full" : "part");
+    pill.textContent = perTopic[t].ok + " / " + perTopic[t].total;
+    li.appendChild(name); li.appendChild(pill);
+    ul.appendChild(li);
+  });
+
+  var msg = document.getElementById("msg");
+  var wrongCount = QUESTIONS.length - totalCorrect;
+  if(wrongCount === 0){
+    msg.textContent = "Všetko správne. Pripravená na test.";
+    retryBtn.style.display = "none";
+  }else{
+    msg.textContent = "Pozri si červené vety, oprav ich a klikni „Precvič len chyby“.";
+    retryBtn.style.display = "inline-block";
+  }
+  showAllBtn.style.display = "none";
+
+  resultBox.classList.add("show");
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
+function practiceWrongOnly(){
+  QUESTIONS.forEach(function(q, qi){
+    var row = document.getElementById("q"+qi);
+    var sol = document.getElementById("sol"+qi);
+    if(row.getAttribute("data-wrong")){
+      row.classList.remove("hidden");
+      q.a.forEach(function(list, bi){
+        var inp = document.getElementById("q"+qi+"b"+bi);
+        inp.value = "";
+        inp.classList.remove("correct","wrong");
+      });
+      sol.style.display = "none";
+    }else{
+      row.classList.add("hidden");
+    }
+  });
+  retryBtn.style.display = "none";
+  showAllBtn.style.display = "inline-block";
+  resultBox.classList.remove("show");
+  var first = document.querySelector(".q:not(.hidden) input.blank");
+  if(first){ first.focus(); window.scrollTo({top:first.getBoundingClientRect().top + window.scrollY - 120}); }
+}
+
+function showAll(){
+  QUESTIONS.forEach(function(q, qi){
+    document.getElementById("q"+qi).classList.remove("hidden");
+  });
+  showAllBtn.style.display = "none";
+}
+
+function resetAll(){
+  QUESTIONS.forEach(function(q, qi){
+    var row = document.getElementById("q"+qi);
+    row.classList.remove("hidden");
+    row.removeAttribute("data-wrong");
+    document.getElementById("sol"+qi).style.display = "none";
+    q.a.forEach(function(list, bi){
+      var inp = document.getElementById("q"+qi+"b"+bi);
+      inp.value = "";
+      inp.classList.remove("correct","wrong");
+    });
+  });
+  resultBox.classList.remove("show");
+  retryBtn.style.display = "none";
+  showAllBtn.style.display = "none";
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
+checkBtn.addEventListener("click", checkAll);
+retryBtn.addEventListener("click", practiceWrongOnly);
+showAllBtn.addEventListener("click", showAll);
+resetBtn.addEventListener("click", resetAll);
+</script>
+</body>
+</html>
