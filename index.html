@@ -90,7 +90,8 @@
   <div class="hint-top">
     Test má 7 častí: nepravidelné slovesá, Past Simple (vety, zápor, otázky), časové výrazy,
     prídavné mená a double genitive. Je dlhší (47 viet) – pokojne ho rob po častiach.
-    Krátky zápor píš <b>didn't</b>. Veľké a malé písmená nevadia.
+    Pri zápore a otázkach napíš celú časť do jedného políčka
+    (napr. <b>didn't believe</b> alebo <b>did you buy</b>). Veľké a malé písmená nevadia.
     Keď máš hotovo, klikni <b>Skontroluj odpovede</b> dole.
   </div>
 
@@ -148,18 +149,18 @@ var QUESTIONS = [
   {t:VB, txt:"The band {0} for three hours. <span class='hintword'>(perform)</span>", a:[["performed"]]},
   {t:VB, txt:"My friends {0} to my house before the concert. <span class='hintword'>(come)</span>", a:[["came"]]},
 
-  // 3) Past Simple - zápor
-  {t:VC, txt:"At first they {0} {1} me. <span class='hintword'>(not / believe)</span>", a:[["didnt","did not"],["believe"]]},
-  {t:VC, txt:"I {0} {1} enough money for the tickets. <span class='hintword'>(not / have)</span>", a:[["didnt","did not"],["have"]]},
-  {t:VC, txt:"They {0} {1} my favourite song. <span class='hintword'>(not / sing)</span>", a:[["didnt","did not"],["sing"]]},
+  // 3) Past Simple - zápor (celú časť napíš do jedného políčka)
+  {t:VC, txt:"At first they {0} me. <span class='hintword'>(not / believe)</span>", a:[["didn't believe","did not believe"]]},
+  {t:VC, txt:"I {0} enough money for the tickets. <span class='hintword'>(not / have)</span>", a:[["didn't have","did not have"]]},
+  {t:VC, txt:"They {0} my favourite song. <span class='hintword'>(not / sing)</span>", a:[["didn't sing","did not sing"]]},
 
-  // 4) Past Simple - utvor otázku (did + podmet + základný tvar)
-  {t:VD, txt:"I bought something last week.<br>What {0} {1} {2}? <span class='hintword'>(buy)</span>", a:[["did"],["you"],["buy"]]},
-  {t:VD, txt:"They went somewhere last weekend.<br>Where {0} {1} {2}? <span class='hintword'>(go)</span>", a:[["did"],["they"],["go"]]},
-  {t:VD, txt:"I heard something strange.<br>What {0} {1} {2}? <span class='hintword'>(hear)</span>", a:[["did"],["you"],["hear"]]},
-  {t:VD, txt:"You said something.<br>What {0} {1} {2}? <span class='hintword'>(say)</span>", a:[["did"],["I"],["say"]]},
-  {t:VD, txt:"I met someone in town this morning.<br>Who {0} {1} {2}? <span class='hintword'>(meet)</span>", a:[["did"],["you"],["meet"]]},
-  {t:VD, txt:"I phoned her last night.<br>Who {0} {1} {2}? <span class='hintword'>(phone)</span>", a:[["did"],["you"],["phone"]]},
+  // 4) Past Simple - utvor otázku (celú otázku napíš do jedného políčka)
+  {t:VD, txt:"I bought something last week.<br>What {0}? <span class='hintword'>(buy)</span>", a:[["did you buy"]]},
+  {t:VD, txt:"They went somewhere last weekend.<br>Where {0}? <span class='hintword'>(go)</span>", a:[["did they go"]]},
+  {t:VD, txt:"I heard something strange.<br>What {0}? <span class='hintword'>(hear)</span>", a:[["did you hear"]]},
+  {t:VD, txt:"You said something.<br>What {0}? <span class='hintword'>(say)</span>", a:[["did I say"]]},
+  {t:VD, txt:"I met someone in town this morning.<br>Who {0}? <span class='hintword'>(meet)</span>", a:[["did you meet"]]},
+  {t:VD, txt:"I phoned her last night.<br>Who {0}? <span class='hintword'>(phone)</span>", a:[["did you phone"]]},
 
   // 5) Časové výrazy
   {t:TE, txt:"I saw her two weeks {0}.", a:[["ago"]]},
@@ -253,9 +254,13 @@ QUESTIONS.forEach(function(q, qi){
       inp.setAttribute("autocomplete","off");
       inp.setAttribute("autocorrect","off");
       inp.setAttribute("spellcheck","false");
-      var longest = 0;
-      q.a[bi].forEach(function(x){ if(x.length>longest) longest=x.length; });
-      inp.style.width = Math.max(70, longest*11 + 24) + "px";
+      // šírka políčka: viacslovné odpovede dostanú širšie pole
+      var longest = 0; var hasSpace = false;
+      q.a[bi].forEach(function(x){
+        if(x.length>longest) longest=x.length;
+        if(x.indexOf(" ")>=0) hasSpace=true;
+      });
+      inp.style.width = (hasSpace ? Math.max(170, longest*10 + 30) : Math.max(70, longest*11 + 24)) + "px";
       txt.appendChild(inp);
     } else {
       var span = document.createElement("span");
